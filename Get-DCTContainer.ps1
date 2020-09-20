@@ -11,6 +11,9 @@ Param (
 )
 
 Begin {
+}
+
+Process {
     $Answer = Invoke-WebRequest -Uri "https://dctgdansk.pl/strefa-klienta/sprawdz-kontener-on-line/" `
     -Method "POST" `
     -Headers @{
@@ -35,9 +38,11 @@ Begin {
     } `
     -ContentType "application/x-www-form-urlencoded" `
     -Body "cntrnumber=$Container&submit=Sprawd%C5%BA";
-}
 
-Process {
+    If($Answer -Match '<h3>Nic nie znaleziono</h3>') { 
+        Return "Nie znaleziono kontenera"
+    }
+    
     $XmlTable = [xml]($Answer -split '\n' -join '' -replace '.*(<table class="container">.*</table>).*','$1' -replace '&nbsp;')
 
     $XmlTable.table.tr | ForEach-Object {
